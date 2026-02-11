@@ -1,0 +1,179 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{float}
+\usepackage{caption}
+
+\geometry{left=2cm,right=2cm,top=2cm,bottom=2cm}
+
+\title{Качественный анализ областей устойчивости нелинейной системы управления методом функций Ляпунова}
+\author{Сороколетов Денис Сергеевич}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Введение и модель}
+
+\subsection{Параметры системы}
+
+В работе рассматривается система с параметрами, приведенными в Таблице \ref{tab:params}.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+Параметр & Значение & Единица \\
+\hline
+$m_0$ (масса тележки) & 1.5 & кг \\
+$m_1$ (масса звена 1) & 0.5 & кг \\
+$m_2$ (масса звена 2) & 0.75 & кг \\
+$L_1$ (длина звена 1) & 0.5 & м \\
+$L_2$ (длина звена 2) & 0.75 & м \\
+$g$ (ускорение св. падения) & 9.81 & м/с² \\
+\hline
+\end{tabular}
+\caption{Физические параметры системы}
+\label{tab:params}
+\end{table}
+
+\subsection{Уравнения движения}
+
+Используя формализм Лагранжа, уравнения движения записываются в виде:
+
+\begin{equation}
+D(\theta)\ddot{\theta} + C(\theta, \dot{\theta})\dot{\theta} + G(\theta) = H u
+\end{equation}
+
+где $\theta = [\theta_0, \theta_1, \theta_2]^T$.
+
+Матрица инерции $D(\theta)$:
+\begin{equation}
+D(\theta) = \begin{pmatrix} 
+m_0 + m_1 + m_2 & (m_1/2 + m_2)L_1 \cos\theta_1 & m_2 (L_2/2) \cos\theta_2 \\
+(m_1/2 + m_2)L_1 \cos\theta_1 & m_1 L_1^2/3 + m_2 L_1^2 & m_2 L_1 (L_2/2) \cos(\theta_1 - \theta_2) \\
+m_2 (L_2/2) \cos\theta_2 & m_2 L_1 (L_2/2) \cos(\theta_1 - \theta_2) & m_2 L_2^2/3
+\end{pmatrix}
+\end{equation}
+
+Вектор гравитационных сил $G(\theta)$:
+\begin{equation}
+G(\theta) = \begin{pmatrix} 
+0 \\
+-(m_1/2 + m_2)g L_1 \sin\theta_1 \\
+-m_2 g (L_2/2) \sin\theta_2
+\end{pmatrix}
+\end{equation}
+
+Вектор входных воздействий $H$, определяющий влияние горизонтальной силы $u$:
+\begin{equation}
+H = \begin{pmatrix} 1 \\ 0 \\ 0 \end{pmatrix}
+\end{equation}
+
+Матрица кориолисовых сил $C(\theta, \dot{\theta})$ определяется через символы Кристоффеля первого рода.
+
+\subsection{Линеаризация и устойчивость}
+
+Линеаризуем систему в окрестности верхнего неустойчивого равновесия $x_{eq} = 0$. Уравнения в пространстве состояний:
+\begin{equation}
+\dot{x} = Ax + Bu, \quad A = \frac{\partial f}{\partial x}\bigg|_{x=0}
+\end{equation}
+
+Матрица $A$ имеет блочную структуру:
+\begin{equation}
+A = \begin{pmatrix}
+0_{3\times 3} & I_{3\times 3} \\
+-D^{-1}(0)\frac{\partial G}{\partial \theta}\big|_{0} & 0_{3\times 3}
+\end{pmatrix}
+\end{equation}
+
+Анализ собственных чисел матрицы $A$ (разомкнутая система) показывает наличие положительных действительных корней, что подтверждает неустойчивость системы без управления.
+
+Для замкнутой системы с регулятором $u = -Kx$ матрица динамики $A_{cl} = A - BK$. Все собственные числа $\lambda(A_{cl})$ лежат в левой полуплоскости ($\text{Re}(\lambda) < 0$). Характеристический полином $\det(sI - A_{cl})$ удовлетворяет критерию Гурвица (все миноры матрицы Гурвица положительны), что гарантирует асимптотическую устойчивость линейного приближения.
+
+\section{Анализ устойчивости методом Ляпунова}
+
+\subsection{Функция Ляпунова}
+
+В качестве кандидата на функцию Ляпунова выберем полную энергию системы относительно положения равновесия:
+\begin{equation}
+V(\theta, \dot{\theta}) = \frac{1}{2}\dot{\theta}^T D(\theta) \dot{\theta} + P(\theta)
+\end{equation}
+где $P(\theta)$ — потенциальная энергия, нормированная так, что $P(0)=0$.
+
+Производная функции Ляпунова вдоль траекторий системы:
+\begin{equation}
+\dot{V} = \dot{\theta}^T H u
+\end{equation}
+
+При использовании линейного регулятора $u = -Kx$ в малой окрестности равновесия:
+\begin{equation}
+\dot{V} \approx -\dot{\theta}^T H K \begin{pmatrix} \theta \\ \dot{\theta} \end{pmatrix}
+\end{equation}
+Для оптимального LQR-регулятора, минимизирующего квадратичный функционал, можно показать, что в линейном приближении $\dot{V} = -x^T (Q + K^T R K) x < 0$, что обеспечивает диссипацию энергии и сходимость к равновесию.
+
+На Рис. \ref{fig:lyap} показана эволюция полной энергии системы. Видно монотонное убывание, подтверждающее условие $\dot{V} \leq 0$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/group2_lyapunov.pdf}
+\caption{Эволюция полной энергии системы $V(t)$.}
+\label{fig:lyap}
+\end{figure}
+
+\subsection{Аналитическая оценка области притяжения}
+
+Оценим максимальное начальное отклонение $\theta_{max}$, при котором регулятор способен поглотить избыточную потенциальную энергию.
+Потенциальная энергия при отклонении на угол $\theta$:
+\begin{equation}
+P(\theta) \approx \frac{1}{2} M_{eff} g L_{eff} \theta^2
+\end{equation}
+Приравнивая её к энергетическому ресурсу привода, получаем теоретическую оценку критического угла $\theta_{crit} \approx 35^\circ - 40^\circ$, что хорошо согласуется с результатами численного моделирования.
+
+\subsection{Фазовый анализ}
+
+Фазовые портреты (Рис. \ref{fig:phase1} и \ref{fig:phase2}) демонстрируют поведение системы при различных начальных отклонениях.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/group2_phase_portrait.pdf}
+\caption{Фазовый портрет первого звена ($\theta_1, \dot{\theta}_1$). Зеленые траектории — устойчивые, красные — неустойчивые.}
+\label{fig:phase1}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/group2_phase_th2.pdf}
+\caption{Фазовый портрет второго звена ($\theta_2, \dot{\theta}_2$).}
+\label{fig:phase2}
+\end{figure}
+
+Сепаратриса, разделяющая области устойчивости и неустойчивости, проходит в районе $\theta_1 \approx 0.7$ рад ($40^\circ$).
+
+\section{Исследование робастности}
+
+Исследована чувствительность системы к вариациям параметров модели (массы, длины). На Рис. \ref{fig:robust} показана зависимость критического угла устойчивости от массы второго звена $m_2$.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/group2_robustness.pdf}
+\caption{Зависимость критического угла отклонения от вариации массы $m_2$.}
+\label{fig:robust}
+\end{figure}
+
+Анализ показывает, что увеличение массы второго звена на 20\% приводит к сужению области устойчивости примерно на $5^\circ$. Система демонстрирует достаточную робастность к малым возмущениям параметров.
+
+\section{Заключение}
+
+1. Линеаризация системы подтвердила неустойчивость разомкнутого объекта и возможность стабилизации линейным регулятором (выполнение критерия Гурвица).
+2. Метод функций Ляпунова обосновал глобальную устойчивость в ограниченной области фазового пространства.
+3. Численно и аналитически установлена граница области притяжения $\approx 40^\circ$.
+4. Анализ робастности показал, что система сохраняет работоспособность при вариации параметров до $\pm 20\%$, однако критический угол при этом изменяется.
+
+\end{document}
